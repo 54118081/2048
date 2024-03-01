@@ -7,7 +7,6 @@ class Game:
     def __init__(self):
         self.matrix = [[0 for x in range(4)] for x in range(4)]
         self.current = 0
-        self.best = 0
         self.game_start()
 
     def game_start(self):
@@ -15,8 +14,10 @@ class Game:
         for i in range(2):
             self.add_number()
 
+        self.display()
+
         keyboard.on_press(self.press_key)
-        while True:
+        while self.game_continue():
             pass
 
     def add_number(self):
@@ -34,19 +35,19 @@ class Game:
     def display(self):
         print("------------------")
         print(pd.DataFrame(self.matrix))
+        print("Score: ", self.current)
 
     def press_key(self, event):
         # create a listener
+        original = self.matrix.copy()
         if event.name == 'w' or event.name == 'up':
             self.transpose()
             self.move_left()
             self.combine()
             self.transpose()
-            self.display()
         elif event.name == 'a' or event.name == 'left':
             self.move_left()
             self.combine()
-            self.display()
         elif event.name == 'd' or event.name == 'right':
             # reverse the element in each row
             # then combine them and reverse it back
@@ -54,7 +55,6 @@ class Game:
             self.move_left()
             self.combine()
             self.reverse()
-            self.display()
         elif event.name == 's' or event.name == 'down':
             self.transpose()
             self.reverse()
@@ -62,7 +62,10 @@ class Game:
             self.combine()
             self.reverse()
             self.transpose()
-            self.display()
+
+        if original != self.matrix:
+            self.add_number()
+        self.display()
 
     def combine(self):
         # add two same grid into one grid
@@ -77,6 +80,7 @@ class Game:
                 if cur_row[col_i] == cur_row[col_i+1]:
                     self.matrix[row_i][col_i] *= 2
                     self.matrix[row_i][col_i+1] = 0
+                    self.current += self.matrix[row_i][col_i]
                     col_i += 2
                 else:
                     col_i += 1
@@ -105,6 +109,22 @@ class Game:
             while len(new_row) < 4:
                 new_row.append(0)
             self.matrix[row_index] = new_row
+
+    def game_continue(self):
+        for i in range(4):
+            for j in range(4):
+                if self.matrix[i][j] == 0:
+                    return True
+
+        for i in range(4):
+            for j in range(4):
+                if i+1 < 4:
+                    if self.matrix[i][j] == self.matrix[i+1][j]:
+                        return True
+                if j+1 < 4:
+                    if self.matrix[i][j] == self.matrix[i][j+1]:
+                        return True
+        return False
 
 
 # Press the green button in the gutter to run the script.
